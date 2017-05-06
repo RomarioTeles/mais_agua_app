@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Mais Agua</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+    <string name="preference_file_key">app.maisagua.preference_file_key</string>
+    <string name="title_activity_note">NoteActivity</string>
+</resources>
