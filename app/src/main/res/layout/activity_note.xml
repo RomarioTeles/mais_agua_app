@@ -15,7 +15,7 @@
 
     <TextView
         android:id="@+id/textView_title"
-        android:text="Seu corpo precisa de Água"
+        android:text="@string/consumo_do_dia"
         android:gravity="center"
         android:textSize="30dp"
         android:layout_width="match_parent"
@@ -33,7 +33,7 @@
 
     <TextView
         android:id="@+id/textView_quant"
-        android:text="0l de 3,3l"
+        android:text=""
         android:gravity="top|center"
         android:textSize="20dp"
         android:layout_width="match_parent"
@@ -42,7 +42,7 @@
 
     <Button
         android:id="@+id/button_add"
-        android:text="Registrar Consumo"
+        android:text="@string/registrar_consumo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="20dp"

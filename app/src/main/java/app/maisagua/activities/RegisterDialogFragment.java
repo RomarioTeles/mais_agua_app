@@ -1,9 +1,9 @@
 package app.maisagua.activities;
 
-import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -26,9 +26,9 @@ import app.maisagua.helpers.DataSourceHelper;
 
 public class RegisterDialogFragment extends DialogFragment {
 
-    String[] types = new String[]{"Água", "Chá", "Café", "Suco", "Refri", "Outros"};
+    String[] types;
 
-    String[] medidas = new String[]{"ml", "l"};
+    String[] medidas = new String[]{"ml"};
 
     ArrayAdapter typesAdapter, medidasAdapter;
 
@@ -50,6 +50,8 @@ public class RegisterDialogFragment extends DialogFragment {
         buttonCancel = (Button) getView().findViewById(R.id.button_cancel);
 
         buttonOk = (Button) getView().findViewById(R.id.button_ok);
+
+        types = getResources().getStringArray(R.array.types_of_drinks);
 
         typesSpinner = (Spinner) getView().findViewById(R.id.spinner_types);
 
@@ -115,7 +117,7 @@ public class RegisterDialogFragment extends DialogFragment {
             String type = params[0];
             String potion = params[1];
             String medida = params[2];
-            String date = new SimpleDateFormat().format(new Date()).split("/")[0];
+            String date = new SimpleDateFormat().format(new Date()).split(" ")[0];
 
             ContentValues values = new ContentValues();
             values.put(DataBaseContract.NoteEntry.COLUMN_NAME_DATETIME, date);
@@ -132,6 +134,9 @@ public class RegisterDialogFragment extends DialogFragment {
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
             dialog.dismiss();
+            Intent intent = new Intent(getActivity(), NoteActivity.class);
+            startActivity(intent);
+            getActivity().finish();
             dismiss();
         }
     }

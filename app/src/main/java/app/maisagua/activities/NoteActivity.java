@@ -1,11 +1,13 @@
 package app.maisagua.activities;
 
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
-import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -55,7 +57,6 @@ public class NoteActivity extends BaseActivity{
         registerDialogFragment.show(fm, "fragment_edit_name");
     }
 
-
     @Override
     public boolean useToolbar() {
         return true;
@@ -66,13 +67,32 @@ public class NoteActivity extends BaseActivity{
         return false;
     }
 
-    public void handleResult(String result) {
+    public void handleResult(Double[] result) {
         if(result != null){
-            textViewQuant.setText(result);
+
+            if(result.length > 1 && result[1] != null) {
+
+                Double dSum = result[0] / 1000;
+                Double dGoal = result[1] / 1000;
+
+                String sum = String.format("%.1f", dSum.floatValue());
+                String goal = String.format("%.1f", dGoal.floatValue());
+
+                try {
+                    Double percentTotal = (dSum / dGoal) * 100;
+
+                    textViewQuant.setText(getString(R.string.amount_label, sum, goal));
+
+                    textViewPercent.setText(String.format("%.0f", percentTotal) + "%");
+
+                } catch (Exception e) {
+                    Log.e("handleResult", e.getMessage());
+                }
+            }
         }
     }
 
-    class QueryTask extends AsyncTask<String, String, String>{
+    class QueryTask extends AsyncTask<String, String, Double[]>{
 
         ProgressDialog dialog;
 
@@ -89,9 +109,9 @@ public class NoteActivity extends BaseActivity{
         }
 
         @Override
-        protected String doInBackground(String... params) {
+        protected Double[] doInBackground(String... params) {
 
-            String amount = null;
+            Double sum = 0.0, goal = 0.0;
 
             DataSourceHelper mDataSourceHelper = new DataSourceHelper(NoteActivity.this);
 
@@ -103,25 +123,24 @@ public class NoteActivity extends BaseActivity{
             int rows = cursorGoal.getCount();
             if(rows > 0) {
                 cursorGoal.moveToFirst();
-                Double goal = cursorGoal.getDouble(cursorGoal.getColumnIndex(DataBaseContract.SettingsEntry.COLUMN_NAME_GOAL)) / 1000;
-                String date = new SimpleDateFormat().format(new Date()).split("/")[0];
+                goal = cursorGoal.getDouble(cursorGoal.getColumnIndex(DataBaseContract.SettingsEntry.COLUMN_NAME_GOAL));
+                String date = new SimpleDateFormat().format(new Date()).split(" ")[0];
                 Cursor cursorSum = mDataSourceHelper.getReadableDatabase().rawQuery("SELECT SUM("+ DataBaseContract.NoteEntry.COLUMN_NAME_POTION +")" + " FROM " +
                         DataBaseContract.NoteEntry.TABLE_NAME + " WHERE " + DataBaseContract.NoteEntry.COLUMN_NAME_DATETIME + " = ?", new String[]{date} );
 
                 if(cursorSum.getCount() > 0){
                     cursorSum.moveToFirst();
-                    Double sum = cursorSum.getDouble(0) / 1000;
-                    amount = sum + "l of " + goal + "l";
+                    sum = cursorSum.getDouble(0);
                 }
             }
 
-            return amount;
+            return new Double[]{sum, goal};
         }
 
         @Override
-        protected void onPostExecute(String aVoid) {
-            super.onPostExecute(aVoid);
-            handleResult(aVoid);
+        protected void onPostExecute(Double[] result) {
+            super.onPostExecute(result);
+            handleResult(result);
             dialog.dismiss();
         }
     }

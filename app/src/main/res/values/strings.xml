@@ -4,7 +4,12 @@
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
-    <string name="action_settings">Settings</string>
+    <string name="action_settings">Configurações</string>
     <string name="preference_file_key">app.maisagua.preference_file_key</string>
-    <string name="title_activity_note">NoteActivity</string>
+    <string name="title_activity_note">Adicionar Bebida</string>
+    <string name="amount_label">%1$s de %2$s litros</string>
+    <string name="percent_total_label"> %1$d</string>
+    <string name="registrar_consumo">Registrar Consumo</string>
+    <string name="consumo_do_dia">Consumo do dia</string>
+    <string name="objetivo">Objetivo</string>
 </resources>

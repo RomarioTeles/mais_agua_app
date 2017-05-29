@@ -1,12 +1,18 @@
 package app.maisagua.activities;
 
+import android.app.AlarmManager;
 import android.app.DatePickerDialog;
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.ContentValues;
+import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.DatePicker;
@@ -15,11 +21,15 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.List;
 
 import app.maisagua.R;
 import app.maisagua.dataSource.DataBaseContract;
 import app.maisagua.helpers.DataSourceHelper;
+import app.maisagua.receivers.NotificationPublisher;
 
 /**
  * Created by Samsung on 03/05/2017.
@@ -27,7 +37,11 @@ import app.maisagua.helpers.DataSourceHelper;
 
 public class SettingsActivity extends BaseActivity {
 
-    EditText editTextName, editTextLastName, editTextHeight, editTextWeight, editTextDateOfBirth;
+    private static final long ONE_HOUR_IN_MILLISECONDS = 3600000;
+
+    static final int ML_BY_KG = 35;
+
+    EditText editTextWeight;
 
     TextView textViewGoal;
 
@@ -44,11 +58,7 @@ public class SettingsActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         super.setContentView(R.layout.activity_settings);
 
-        editTextName = (EditText) findViewById(R.id.editText_name);
-        editTextLastName = (EditText) findViewById(R.id.editText_lastName);
-        editTextHeight = (EditText) findViewById(R.id.editText_height);
         editTextWeight = (EditText) findViewById(R.id.editText_weight);
-        editTextDateOfBirth = (EditText) findViewById(R.id.editText_dateOfBirth);
         spinnerInterval = (Spinner) findViewById(R.id.spinner_interval);
         textViewGoal = (TextView) findViewById(R.id.textView_goal);
 
@@ -66,48 +76,14 @@ public class SettingsActivity extends BaseActivity {
         QueryTask queryTask = new QueryTask();
         queryTask.execute();
 
-        editTextDateOfBirth.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                int mYear, mMonth , mDay;
-                if(editTextDateOfBirth.getText().toString().isEmpty()) {
-                    Calendar mcurrentDate = Calendar.getInstance();
-                    mYear = mcurrentDate.get(Calendar.YEAR);
-                    mMonth = mcurrentDate.get(Calendar.MONTH);
-                    mDay = mcurrentDate.get(Calendar.DAY_OF_MONTH);
-                }else{
-                    String[] dateOfBirth = editTextDateOfBirth.getText().toString().split("/");
-                    mYear = Integer.valueOf(dateOfBirth[2]);
-                    mMonth =Integer.valueOf(dateOfBirth[1]);
-                    mDay = Integer.valueOf(dateOfBirth[0]);
-                }
-
-                DatePickerDialog mDatePicker=new DatePickerDialog(SettingsActivity.this, new DatePickerDialog.OnDateSetListener() {
-                    public void onDateSet(DatePicker datepicker, int selectedyear, int selectedmonth, int selectedday) {
-                        Calendar mcurrentDate = Calendar.getInstance();
-                        mcurrentDate.set(Calendar.DAY_OF_MONTH, selectedday);
-                        mcurrentDate.set(Calendar.MONTH, selectedmonth);
-                        mcurrentDate.set(Calendar.YEAR, selectedyear);
-                        String dateFormatted = new SimpleDateFormat().format(mcurrentDate.getTime());
-                        editTextDateOfBirth.setText(dateFormatted.split(" ")[0]);
-                    }
-                },mYear, mMonth, mDay);
-                mDatePicker.setTitle("Select date");
-                mDatePicker.show();
-            }
-        });
 
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String name = editTextName.getText().toString();
-                String lastName = editTextLastName.getText().toString();
-                String height = editTextHeight.getText().toString();
                 String weight = editTextWeight.getText().toString();
                 Integer interval = (Integer) spinnerInterval.getSelectedItem();
-                String dateOfBirth = editTextDateOfBirth.getText().toString();
                 SaveTask saveTask = new SaveTask();
-                saveTask.execute(name, lastName, height, weight, dateOfBirth, String.valueOf(interval));
+                saveTask.execute(weight, String.valueOf(interval));
             }
         });
     }
@@ -122,11 +98,33 @@ public class SettingsActivity extends BaseActivity {
         return true;
     }
 
-    class SaveTask extends AsyncTask<String, Void, String>{
+    public void scheduleNotification(Notification notification, int interval){
+        AlarmManager mAlarmManager = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+
+        Intent intent = new Intent(this, NotificationPublisher.class);
+        intent.putExtra(NotificationPublisher.NOTIFICATION_ID, 1);
+        intent.putExtra(NotificationPublisher.NOTIFICATION, notification);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0,
+                intent, 0);
+
+        interval *= ONE_HOUR_IN_MILLISECONDS;
+
+        long triggerAtMillis = SystemClock.elapsedRealtime() + interval;
+
+        mAlarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerAtMillis, interval, pendingIntent);
+    }
+
+    private Notification getNotification() {
+        Notification.Builder builder = new Notification.Builder(this);
+        builder.setContentTitle("Mais Água");
+        builder.setContentText("Beba mais Água");
+        builder.setSmallIcon(R.drawable.ic_menu_send);
+        return builder.build();
+    }
+
+    class SaveTask extends AsyncTask<String, Void, List<String>>{
 
         ProgressDialog progressDialog;
-
-        static final int ML_BY_KG = 35;
 
         @Override
         protected void onPreExecute() {
@@ -138,22 +136,14 @@ public class SettingsActivity extends BaseActivity {
         }
 
         @Override
-        protected String doInBackground(String... params) {
+        protected List<String> doInBackground(String... params) {
 
-            String name = params[0];
-            String lastName = params[1];
-            String height = params[2];
-            String weight = params[3];
-            String dateOfBirth = params[4];
-            String interval = params[5];
+            String weight = params[0];
+            String interval = params[1];
             Double goal = Double.valueOf(weight) * ML_BY_KG;
 
             ContentValues contentValues = new ContentValues();
-            contentValues.put(DataBaseContract.SettingsEntry.COLUMN_NAME_FIRST_NAME, name);
-            contentValues.put(DataBaseContract.SettingsEntry.COLUMN_NAME_LAST_NAME, lastName);
-            contentValues.put(DataBaseContract.SettingsEntry.COLUMN_NAME_HEIGHT, height);
             contentValues.put(DataBaseContract.SettingsEntry.COLUMN_NAME_WEIGHT, weight);
-            contentValues.put(DataBaseContract.SettingsEntry.COLUMN_NAME_DATE_OF_BIRTH, dateOfBirth);
             contentValues.put(DataBaseContract.SettingsEntry.COLUMN_NAME_GOAL, goal);
             contentValues.put(DataBaseContract.SettingsEntry.COLUMN_NAME_NOTIFICATION_INTERVAL, interval);
 
@@ -165,22 +155,30 @@ public class SettingsActivity extends BaseActivity {
                 mDataSourceHelper.update(DataBaseContract.SettingsEntry.TABLE_NAME, contentValues,"_ID = ?", new String[]{String.valueOf(id)});
             }
 
-            return goal.toString();
+            List<String> paramsAsList = new ArrayList<String>();
+            paramsAsList.add(weight);
+            paramsAsList.add(interval);
+            paramsAsList.add(String.valueOf(goal));
+
+            return paramsAsList;
         }
 
         @Override
-        protected void onPostExecute(String goal) {
-            super.onPostExecute(goal);
+        protected void onPostExecute(List<String> params) {
+            super.onPostExecute(params);
             progressDialog.dismiss();
-            textViewGoal.setText(goal + " ml");
+            textViewGoal.setText(params.get(2) + " ml");
+
+            Notification notification = getNotification();
+
+            scheduleNotification(notification, Integer.parseInt(params.get(5)));
+
         }
     }
 
     class QueryTask extends AsyncTask<Void, Void, Cursor>{
 
         ProgressDialog progressDialog;
-
-        static final int ML_BY_KG = 35;
 
         @Override
         protected void onPreExecute() {
@@ -196,11 +194,7 @@ public class SettingsActivity extends BaseActivity {
             DataSourceHelper mDataSourceHelper = new DataSourceHelper(SettingsActivity.this);
             String[] projection = new String[]{
                     DataBaseContract.SettingsEntry._ID,
-                    DataBaseContract.SettingsEntry.COLUMN_NAME_FIRST_NAME,
-                    DataBaseContract.SettingsEntry.COLUMN_NAME_LAST_NAME,
-                    DataBaseContract.SettingsEntry.COLUMN_NAME_HEIGHT,
                     DataBaseContract.SettingsEntry.COLUMN_NAME_WEIGHT,
-                    DataBaseContract.SettingsEntry.COLUMN_NAME_DATE_OF_BIRTH,
                     DataBaseContract.SettingsEntry.COLUMN_NAME_GOAL,
                     DataBaseContract.SettingsEntry.COLUMN_NAME_NOTIFICATION_INTERVAL,
             };
@@ -219,39 +213,17 @@ public class SettingsActivity extends BaseActivity {
 
                 id = cursor.getInt(cursor.getColumnIndexOrThrow(DataBaseContract.SettingsEntry._ID));
 
-                /*SharedPreferences.Editor editor = sharedPreferences.edit();
-
-                editor.putInt("_id", id);
-
-                editor.apply();*/
-
-                String name = cursor.getString(
-                        cursor.getColumnIndexOrThrow(DataBaseContract.SettingsEntry.COLUMN_NAME_FIRST_NAME)
-                );
-                String lastName = cursor.getString(
-                        cursor.getColumnIndexOrThrow(DataBaseContract.SettingsEntry.COLUMN_NAME_LAST_NAME)
-                );
                 String weight = cursor.getString(
                         cursor.getColumnIndexOrThrow(DataBaseContract.SettingsEntry.COLUMN_NAME_WEIGHT)
                 );
-                String height = cursor.getString(
-                        cursor.getColumnIndexOrThrow(DataBaseContract.SettingsEntry.COLUMN_NAME_HEIGHT)
-                );
                 String goal = cursor.getString(
                         cursor.getColumnIndexOrThrow(DataBaseContract.SettingsEntry.COLUMN_NAME_GOAL)
-                );
-                String dateOfBirth = cursor.getString(
-                        cursor.getColumnIndexOrThrow(DataBaseContract.SettingsEntry.COLUMN_NAME_DATE_OF_BIRTH)
                 );
 
                 int interval = cursor.getInt(
                         cursor.getColumnIndexOrThrow(DataBaseContract.SettingsEntry.COLUMN_NAME_NOTIFICATION_INTERVAL)
                 );
 
-                editTextDateOfBirth.setText(dateOfBirth);
-                editTextName.setText(name);
-                editTextLastName.setText(lastName);
-                editTextHeight.setText(height);
                 editTextWeight.setText(weight);
 
                 int position = 0;
