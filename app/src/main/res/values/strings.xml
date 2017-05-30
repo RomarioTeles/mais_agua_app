@@ -12,4 +12,9 @@
     <string name="registrar_consumo">Registrar Consumo</string>
     <string name="consumo_do_dia">Consumo do dia</string>
     <string name="objetivo">Objetivo</string>
+    <string name="lembrete">Lembrete</string>
+    <string name="lembrete_message">Beba mais um pouco de Água</string>
+    <string name="aguarde">Aguarde</string>
+    <string name="calculando_meta_message">O sistema está calculando sua meta diária.</string>
+    <string name="registrando_message">Registrando...</string>
 </resources>

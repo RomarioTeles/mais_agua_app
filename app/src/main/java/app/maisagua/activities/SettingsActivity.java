@@ -116,9 +116,9 @@ public class SettingsActivity extends BaseActivity {
 
     private Notification getNotification() {
         Notification.Builder builder = new Notification.Builder(this);
-        builder.setContentTitle("Mais Água");
-        builder.setContentText("Beba mais Água");
-        builder.setSmallIcon(R.drawable.ic_launcher);
+        builder.setContentTitle(getString(R.string.lembrete));
+        builder.setContentText(getString(R.string.lembrete_message));
+        builder.setSmallIcon(R.drawable.ic_cup);
         return builder.build();
     }
 
@@ -130,8 +130,8 @@ public class SettingsActivity extends BaseActivity {
         protected void onPreExecute() {
             super.onPreExecute();
             progressDialog = new ProgressDialog(SettingsActivity.this);
-            progressDialog.setTitle("Aguarde");
-            progressDialog.setMessage("O sistema está calculando sua meta diária.");
+            progressDialog.setTitle(getString(R.string.aguarde));
+            progressDialog.setMessage(getString(R.string.calculando_meta_message));
             progressDialog.show();
         }
 
@@ -184,8 +184,7 @@ public class SettingsActivity extends BaseActivity {
         protected void onPreExecute() {
             super.onPreExecute();
             progressDialog = new ProgressDialog(SettingsActivity.this);
-            progressDialog.setTitle("Aguarde");
-            progressDialog.setMessage("O sistema está calculando sua meta diária.");
+            progressDialog.setMessage(getString(R.string.aguarde));
             progressDialog.show();
         }
 

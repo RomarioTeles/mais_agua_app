@@ -104,8 +104,8 @@ public class RegisterDialogFragment extends DialogFragment {
         protected void onPreExecute() {
             super.onPreExecute();
             dialog.setCancelable(false);
-            dialog.setTitle("Aguarde");
-            dialog.setMessage("Registrando...");
+            dialog.setTitle(getString(R.string.aguarde));
+            dialog.setMessage(getString(R.string.registrando_message));
             dialog.show();
         }
 
