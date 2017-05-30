@@ -118,7 +118,7 @@ public class SettingsActivity extends BaseActivity {
         Notification.Builder builder = new Notification.Builder(this);
         builder.setContentTitle("Mais Água");
         builder.setContentText("Beba mais Água");
-        builder.setSmallIcon(R.drawable.ic_menu_send);
+        builder.setSmallIcon(R.drawable.ic_launcher);
         return builder.build();
     }
 
@@ -171,7 +171,7 @@ public class SettingsActivity extends BaseActivity {
 
             Notification notification = getNotification();
 
-            scheduleNotification(notification, Integer.parseInt(params.get(5)));
+            scheduleNotification(notification, Integer.parseInt(params.get(1)));
 
         }
     }

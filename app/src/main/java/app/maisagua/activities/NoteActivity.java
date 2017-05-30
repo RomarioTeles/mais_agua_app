@@ -70,8 +70,11 @@ public class NoteActivity extends BaseActivity{
     public void handleResult(Double[] result) {
         if(result != null){
 
-            if(result.length > 1 && result[1] != null) {
-
+            if(result[1] == 0.0){
+                Intent intent = new Intent(NoteActivity.this, SettingsActivity.class);
+                startActivity(intent);
+                finish();
+            }else{
                 Double dSum = result[0] / 1000;
                 Double dGoal = result[1] / 1000;
 
