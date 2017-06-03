@@ -1,10 +1,10 @@
 package app.maisagua.activities;
 
 import android.app.AlarmManager;
-import android.app.DatePickerDialog;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
+import android.app.TaskStackBuilder;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -15,21 +15,18 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
 import java.util.List;
 
 import app.maisagua.R;
 import app.maisagua.dataSource.DataBaseContract;
 import app.maisagua.helpers.DataSourceHelper;
-import app.maisagua.receivers.NotificationPublisher;
+import app.maisagua.receivers.NotificationReceiver;
+import app.maisagua.receivers.NotificationService;
 
 /**
  * Created by Samsung on 03/05/2017.
@@ -98,30 +95,6 @@ public class SettingsActivity extends BaseActivity {
         return true;
     }
 
-    public void scheduleNotification(Notification notification, int interval){
-        AlarmManager mAlarmManager = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
-
-        Intent intent = new Intent(this, NotificationPublisher.class);
-        intent.putExtra(NotificationPublisher.NOTIFICATION_ID, 1);
-        intent.putExtra(NotificationPublisher.NOTIFICATION, notification);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0,
-                intent, 0);
-
-        interval *= ONE_HOUR_IN_MILLISECONDS;
-
-        long triggerAtMillis = SystemClock.elapsedRealtime() + interval;
-
-        mAlarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerAtMillis, interval, pendingIntent);
-    }
-
-    private Notification getNotification() {
-        Notification.Builder builder = new Notification.Builder(this);
-        builder.setContentTitle(getString(R.string.lembrete));
-        builder.setContentText(getString(R.string.lembrete_message));
-        builder.setSmallIcon(R.drawable.ic_cup);
-        return builder.build();
-    }
-
     class SaveTask extends AsyncTask<String, Void, List<String>>{
 
         ProgressDialog progressDialog;
@@ -169,9 +142,7 @@ public class SettingsActivity extends BaseActivity {
             progressDialog.dismiss();
             textViewGoal.setText(params.get(2) + " ml");
 
-            Notification notification = getNotification();
-
-            scheduleNotification(notification, Integer.parseInt(params.get(1)));
+           startService(new Intent(SettingsActivity.this, NotificationService.class));
 
         }
     }
