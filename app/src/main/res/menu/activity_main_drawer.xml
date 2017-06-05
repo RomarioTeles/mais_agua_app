@@ -6,6 +6,12 @@
             android:id="@+id/nav_register"
             android:icon="@drawable/ic_database_plus"
             android:title="@string/title_activity_note" />
+
+        <item
+            android:id="@+id/nav_history"
+            android:icon="@drawable/ic_water_percent"
+            android:title="@string/title_activity_history" />
+
         <item
             android:id="@+id/nav_manage"
             android:icon="@drawable/ic_menu_manage"

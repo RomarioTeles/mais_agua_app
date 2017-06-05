@@ -117,7 +117,7 @@ public class RegisterDialogFragment extends DialogFragment {
             String type = params[0];
             String potion = params[1];
             String medida = params[2];
-            String date = new SimpleDateFormat().format(new Date()).split(" ")[0];
+            String date = new SimpleDateFormat(getString(R.string.dateFormat)).format(new Date());
 
             ContentValues values = new ContentValues();
             values.put(DataBaseContract.NoteEntry.COLUMN_NAME_DATETIME, date);

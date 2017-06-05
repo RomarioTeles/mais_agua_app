@@ -8,6 +8,7 @@
     <string name="preference_file_key">app.maisagua.preference_file_key</string>
     <string name="title_activity_note">Adicionar Bebida</string>
     <string name="amount_label">%1$s de %2$s litros</string>
+    <string name="quant_litro_label">%1$s litros</string>
     <string name="percent_total_label"> %1$d</string>
     <string name="registrar_consumo">Registrar Consumo</string>
     <string name="consumo_do_dia">Consumo do dia</string>
@@ -17,4 +18,6 @@
     <string name="aguarde">Aguarde</string>
     <string name="calculando_meta_message">O sistema está calculando sua meta diária.</string>
     <string name="registrando_message">Registrando...</string>
+    <string name="title_activity_history">Histórico</string>
+    <string name="dateFormat">dd/MM/yyyy</string>
 </resources>

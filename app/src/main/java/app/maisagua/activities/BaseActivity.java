@@ -133,6 +133,10 @@ abstract class BaseActivity extends AppCompatActivity
             Intent intent = new Intent(this, SettingsActivity.class);
             startActivity(intent);
             finish();
+        } else if(id == R.id.nav_history){
+            Intent intent = new Intent(this, HistoryActivity.class);
+            startActivity(intent);
+            finish();
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
