@@ -20,4 +20,6 @@
     <string name="registrando_message">Registrando...</string>
     <string name="title_activity_history">Histórico</string>
     <string name="dateFormat">dd/MM/yyyy</string>
+    <string name="ADMOB_APP_ID">ca-app-pub-1459790117507046~4379450410</string>
+    <string name="ID_BLOCO_ANUNCIO">ca-app-pub-1459790117507046/5856183615</string>
 </resources>

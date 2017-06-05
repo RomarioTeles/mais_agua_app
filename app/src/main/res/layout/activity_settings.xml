@@ -74,4 +74,6 @@
 
     </LinearLayout>
 
+    <include layout="@layout/admob_banner"/>
+
 </LinearLayout>

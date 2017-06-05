@@ -15,6 +15,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
+
 import app.maisagua.R;
 
 abstract class BaseActivity extends AppCompatActivity
@@ -22,10 +26,11 @@ abstract class BaseActivity extends AppCompatActivity
 
     FloatingActionButton fab;
 
+    AdView mAdView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
     }
 
     @Override
@@ -69,6 +74,11 @@ abstract class BaseActivity extends AppCompatActivity
         }else{
             fab.setVisibility(View.GONE);
         }
+
+        MobileAds.initialize(this, getString(R.string.ADMOB_APP_ID));
+        mAdView = (AdView) findViewById(R.id.adView);
+        AdRequest adRequest = new AdRequest.Builder().addTestDevice("130026C752722E415C5E6E178CA42438").build();
+        mAdView.loadAd(adRequest);
 
     }
 

@@ -23,6 +23,8 @@ import app.maisagua.activities.NoteActivity;
 
 public class NotificationService extends IntentService {
 
+    private static final int ONE_HOUR_IN_MILLISECONDS = 3600000;
+
     public NotificationService() {
         super("app.maisagua.receivers.service");
     }
@@ -41,7 +43,7 @@ public class NotificationService extends IntentService {
         PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0,
                 intent, 0);
 
-        interval *= 10000;//ONE_HOUR_IN_MILLISECONDS;
+        interval *= ONE_HOUR_IN_MILLISECONDS;
 
         long triggerAtMillis = SystemClock.elapsedRealtime() + interval;
 
