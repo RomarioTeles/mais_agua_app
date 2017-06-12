@@ -127,9 +127,9 @@ public class NoteActivity extends BaseActivity{
             if(rows > 0) {
                 cursorGoal.moveToFirst();
                 goal = cursorGoal.getDouble(cursorGoal.getColumnIndex(DataBaseContract.SettingsEntry.COLUMN_NAME_GOAL));
-                String date = new SimpleDateFormat(getString(R.string.dateFormat)).format(new Date());
+                String date = new SimpleDateFormat(getString(R.string.date_stored_format)).format(new Date());
                 Cursor cursorSum = mDataSourceHelper.getReadableDatabase().rawQuery("SELECT SUM("+ DataBaseContract.NoteEntry.COLUMN_NAME_POTION +")" + " FROM " +
-                        DataBaseContract.NoteEntry.TABLE_NAME + " WHERE " + DataBaseContract.NoteEntry.COLUMN_NAME_DATETIME + " = ?", new String[]{date} );
+                        DataBaseContract.NoteEntry.TABLE_NAME + " WHERE "+ DataBaseContract.NoteEntry.COLUMN_NAME_DATETIME +" = ?", new String[]{date} );
 
                 if(cursorSum.getCount() > 0){
                     cursorSum.moveToFirst();

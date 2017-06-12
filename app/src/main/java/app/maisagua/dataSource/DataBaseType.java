@@ -12,4 +12,5 @@ public class DataBaseType {
     public static final String REAL_TYPE = " REAL ";
     public static final String BLOB_TYPE = " BLOB ";
     public static final String NUMERIC_TYPE = " NUMERIC ";
+    public static final String DATETIME_TYPE=" DATETIME ";
 }

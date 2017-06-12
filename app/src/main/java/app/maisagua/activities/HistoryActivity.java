@@ -6,8 +6,10 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.RadioButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +23,8 @@ public class HistoryActivity extends BaseActivity {
 
     ListView listView;
 
+    RadioButton day, month;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -28,8 +32,26 @@ public class HistoryActivity extends BaseActivity {
 
         listView = (ListView) findViewById(R.id.listView_history);
 
-        QueryTask task = new QueryTask();
-        task.execute();
+        day = (RadioButton) findViewById(R.id.radio_day);
+        month = (RadioButton) findViewById(R.id.radio_month);
+
+        day.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                QueryTask task = new QueryTask();
+                task.execute(QueryTask.DAY);
+            }
+        });
+
+        month.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                QueryTask task = new QueryTask();
+                task.execute(QueryTask.MONTH);
+            }
+        });
+
+        day.performClick();
     }
 
     @Override
@@ -44,6 +66,9 @@ public class HistoryActivity extends BaseActivity {
 
     class QueryTask extends AsyncTask<String, String, List> {
 
+        public static final String DAY = "DAY";
+        public static final String MONTH = "MONTH";
+
         ProgressDialog dialog;
 
         public QueryTask() {
@@ -53,13 +78,15 @@ public class HistoryActivity extends BaseActivity {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            dialog.setTitle("Aguarde");
-            dialog.setMessage("Pesquisando o histórico");
+            dialog.setTitle(getString(R.string.aguarde));
+            dialog.setMessage(getString(R.string.pesquisar_historico_message));
             dialog.show();
         }
 
         @Override
         protected List doInBackground(String... params) {
+
+            String filter = params[0];
 
             List<Object[]> resultQuery = new ArrayList<>();
 
@@ -72,9 +99,23 @@ public class HistoryActivity extends BaseActivity {
             Cursor cursorGoal = mDataSourceHelper.query(DataBaseContract.SettingsEntry.TABLE_NAME, projection, null, null, null);
             int rows = cursorGoal.getCount();
             if(rows > 0) {
+                String query = null;
+
+                switch (filter){
+                    case DAY:
+                        query = "SELECT SUM(" + DataBaseContract.NoteEntry.COLUMN_NAME_POTION + "), date(" + DataBaseContract.NoteEntry.COLUMN_NAME_DATETIME + ") FROM " +
+                                DataBaseContract.NoteEntry.TABLE_NAME + " GROUP BY date("+ DataBaseContract.NoteEntry.COLUMN_NAME_DATETIME+") ORDER BY " +
+                                "date("+ DataBaseContract.NoteEntry.COLUMN_NAME_DATETIME+") desc";
+                        break;
+                    case MONTH:
+                        query = "SELECT SUM(" + DataBaseContract.NoteEntry.COLUMN_NAME_POTION + "), strftime('%Y-%m'," + DataBaseContract.NoteEntry.COLUMN_NAME_DATETIME + ") FROM " +
+                                DataBaseContract.NoteEntry.TABLE_NAME + " GROUP BY strftime('%Y-%m', " + DataBaseContract.NoteEntry.COLUMN_NAME_DATETIME +") ORDER BY " +
+                                "strftime('%Y-%m', " + DataBaseContract.NoteEntry.COLUMN_NAME_DATETIME +") desc";
+                        break;
+                }
+
                 cursorGoal.moveToFirst();
-                String query = "SELECT SUM(" + DataBaseContract.NoteEntry.COLUMN_NAME_POTION + "), " + DataBaseContract.NoteEntry.COLUMN_NAME_DATETIME + " FROM " +
-                        DataBaseContract.NoteEntry.TABLE_NAME + " GROUP BY " + DataBaseContract.NoteEntry.COLUMN_NAME_DATETIME;
+
 
                 SQLiteDatabase sqLiteDatabase = mDataSourceHelper.getReadableDatabase();
 

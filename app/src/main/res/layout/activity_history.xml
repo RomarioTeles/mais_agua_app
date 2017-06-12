@@ -8,6 +8,24 @@
     android:padding="@dimen/activity_vertical_margin"
     tools:context="app.maisagua.activities.HistoryActivity">
 
+    <RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="@dimen/activity_horizontal_margin">
+        <RadioButton android:id="@+id/radio_day"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/historico_por_dia"
+            android:layout_weight="1"/>
+
+        <RadioButton android:id="@+id/radio_month"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/historico_por_mes"
+            android:layout_weight="1"/>
+    </RadioGroup>
+
     <ListView
         android:id="@+id/listView_history"
         android:layout_width="match_parent"

@@ -81,7 +81,8 @@ public class RegisterDialogFragment extends DialogFragment {
                 String type = (String) typesSpinner.getSelectedItem();
                 String potion = editTextPotion.getText().toString();
                 String medida = (String) medidasSpinner.getSelectedItem();
-                saveTask.execute(type, potion, medida);
+                if(potion != null && !potion.isEmpty())
+                    saveTask.execute(type, potion, medida);
             }
         });
         getDialog().getWindow().setSoftInputMode(
@@ -117,7 +118,7 @@ public class RegisterDialogFragment extends DialogFragment {
             String type = params[0];
             String potion = params[1];
             String medida = params[2];
-            String date = new SimpleDateFormat(getString(R.string.dateFormat)).format(new Date());
+            String date = new SimpleDateFormat(getString(R.string.date_stored_format)).format(new Date());
 
             ContentValues values = new ContentValues();
             values.put(DataBaseContract.NoteEntry.COLUMN_NAME_DATETIME, date);
@@ -126,6 +127,17 @@ public class RegisterDialogFragment extends DialogFragment {
             values.put(DataBaseContract.NoteEntry.COLUMN_NAME_MEDIDA, medida);
 
             mDataSourceHelper.insert(DataBaseContract.NoteEntry.TABLE_NAME, values);
+
+
+            /*for(int i = 1; i < 6; i++){
+                ContentValues values = new ContentValues();
+                values.put(DataBaseContract.NoteEntry.COLUMN_NAME_DATETIME, "2017-0"+i+"-01");
+                values.put(DataBaseContract.NoteEntry.COLUMN_NAME_TYPE, type);
+                values.put(DataBaseContract.NoteEntry.COLUMN_NAME_POTION, potion);
+                values.put(DataBaseContract.NoteEntry.COLUMN_NAME_MEDIDA, medida);
+
+                mDataSourceHelper.insert(DataBaseContract.NoteEntry.TABLE_NAME, values);
+            }*/
 
             return null;
         }
