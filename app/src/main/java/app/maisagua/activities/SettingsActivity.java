@@ -74,9 +74,9 @@ public class SettingsActivity extends BaseActivity implements SeekBar.OnSeekBarC
         seekBar.setEnabled(false);
 
         intervals = new ArrayList<>();
-        intervals.add(new Interval(0.5, "30 MIN"));
         intervals.add(new Interval(1D, "1 H"));
         intervals.add(new Interval(2D, "2 H"));
+        intervals.add(new Interval(3D, "3 H"));
 
         arrayAdapter = new IntervalAdapter(this, R.layout.item_spinner, intervals);
         spinnerInterval.setAdapter(arrayAdapter);

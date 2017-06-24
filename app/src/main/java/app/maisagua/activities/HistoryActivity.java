@@ -31,8 +31,6 @@ public class HistoryActivity extends BaseActivity implements RewardedVideoAdList
 
     ListView listView;
 
-    RadioButton day, month;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,24 +38,8 @@ public class HistoryActivity extends BaseActivity implements RewardedVideoAdList
 
         listView = (ListView) findViewById(R.id.listView_history);
 
-        day = (RadioButton) findViewById(R.id.radio_day);
-        month = (RadioButton) findViewById(R.id.radio_month);
-
-        day.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                QueryTask task = new QueryTask();
-                task.execute(QueryTask.DAY);
-            }
-        });
-
-        month.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                QueryTask task = new QueryTask();
-                task.execute(QueryTask.MONTH);
-            }
-        });
+        QueryTask task = new QueryTask();
+        task.execute();
     }
 
     @Override
@@ -121,7 +103,7 @@ public class HistoryActivity extends BaseActivity implements RewardedVideoAdList
 
     @Override
     public void onRewarded(RewardItem rewardItem) {
-        day.performClick();
+
     }
 
     @Override
@@ -131,13 +113,10 @@ public class HistoryActivity extends BaseActivity implements RewardedVideoAdList
 
     @Override
     public void onRewardedVideoAdFailedToLoad(int i) {
-        day.performClick();
+
     }
 
     class QueryTask extends AsyncTask<String, String, List> {
-
-        public static final String DAY = "DAY";
-        public static final String MONTH = "MONTH";
 
         ProgressDialog dialog;
 
@@ -156,8 +135,6 @@ public class HistoryActivity extends BaseActivity implements RewardedVideoAdList
         @Override
         protected List doInBackground(String... params) {
 
-            String filter = params[0];
-
             List<Object[]> resultQuery = new ArrayList<>();
 
             DataSourceHelper mDataSourceHelper = new DataSourceHelper(HistoryActivity.this);
@@ -169,23 +146,11 @@ public class HistoryActivity extends BaseActivity implements RewardedVideoAdList
             Cursor cursorGoal = mDataSourceHelper.query(DataBaseContract.SettingsEntry.TABLE_NAME, projection, null, null, null);
             int rows = cursorGoal.getCount();
             if(rows > 0) {
-                String query = null;
-
-                switch (filter){
-                    case DAY:
-                        query = "SELECT SUM(" + DataBaseContract.NoteEntry.COLUMN_NAME_POTION + "), date(" + DataBaseContract.NoteEntry.COLUMN_NAME_DATETIME + ") FROM " +
+                String query = "SELECT SUM(" + DataBaseContract.NoteEntry.COLUMN_NAME_POTION + "), date(" + DataBaseContract.NoteEntry.COLUMN_NAME_DATETIME + ") FROM " +
                                 DataBaseContract.NoteEntry.TABLE_NAME + " GROUP BY date("+ DataBaseContract.NoteEntry.COLUMN_NAME_DATETIME+") ORDER BY " +
                                 "date("+ DataBaseContract.NoteEntry.COLUMN_NAME_DATETIME+") desc";
-                        break;
-                    case MONTH:
-                        query = "SELECT SUM(" + DataBaseContract.NoteEntry.COLUMN_NAME_POTION + "), strftime('%Y-%m'," + DataBaseContract.NoteEntry.COLUMN_NAME_DATETIME + ") FROM " +
-                                DataBaseContract.NoteEntry.TABLE_NAME + " GROUP BY strftime('%Y-%m', " + DataBaseContract.NoteEntry.COLUMN_NAME_DATETIME +") ORDER BY " +
-                                "strftime('%Y-%m', " + DataBaseContract.NoteEntry.COLUMN_NAME_DATETIME +") desc";
-                        break;
-                }
 
                 cursorGoal.moveToFirst();
-
 
                 SQLiteDatabase sqLiteDatabase = mDataSourceHelper.getReadableDatabase();
 
@@ -223,8 +188,8 @@ public class HistoryActivity extends BaseActivity implements RewardedVideoAdList
         @Override
         protected void onPostExecute(List result) {
             super.onPostExecute(result);
-            setListView(result);
             dialog.dismiss();
+            setListView(result);
         }
     }
 
