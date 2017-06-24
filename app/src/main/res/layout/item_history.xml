@@ -10,20 +10,23 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="date"
-        android:layout_weight="0.33"/>
+        android:layout_weight="0.33"
+        android:textSize="18sp"/>
 
     <TextView
         android:id="@+id/textView_sum"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="sum"
-        android:layout_weight="0.33"/>
+        android:layout_weight="0.33"
+        android:textSize="18sp"/>
 
     <TextView
         android:id="@+id/textView_percent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="sum"
-        android:layout_weight="0.33"/>
+        android:layout_weight="0.33"
+        android:textSize="18sp"/>
 
 </LinearLayout>

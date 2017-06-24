@@ -18,6 +18,8 @@ import android.widget.FrameLayout;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.reward.RewardedVideoAd;
+import com.google.android.gms.ads.reward.RewardedVideoAdListener;
 
 import app.maisagua.R;
 
@@ -74,14 +76,17 @@ abstract class BaseActivity extends AppCompatActivity
         }else{
             fab.setVisibility(View.GONE);
         }
+        MobileAds.initialize(this, getString(R.string.ADMOB_APP_ID));
+        loadAdView();
 
+    }
+
+    public void loadAdView(){
         mAdView = (AdView) findViewById(R.id.adView);
         if(mAdView != null) {
-            MobileAds.initialize(this, getString(R.string.ADMOB_APP_ID));
             AdRequest adRequest = new AdRequest.Builder().addTestDevice("130026C752722E415C5E6E178CA42438").build();
             mAdView.loadAd(adRequest);
         }
-
     }
 
     public abstract boolean useToolbar();
@@ -148,6 +153,9 @@ abstract class BaseActivity extends AppCompatActivity
         } else if(id == R.id.nav_history){
             Intent intent = new Intent(this, HistoryActivity.class);
             startActivity(intent);
+            finish();
+        }else if(id == R.id.nav_exit){
+            moveTaskToBack(true);
             finish();
         }
 

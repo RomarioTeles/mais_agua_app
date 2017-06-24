@@ -17,12 +17,16 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/historico_por_dia"
+            android:textSize="18sp"
+            android:textAllCaps="true"
             android:layout_weight="1"/>
 
         <RadioButton android:id="@+id/radio_month"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/historico_por_mes"
+            android:textSize="18sp"
+            android:textAllCaps="true"
             android:layout_weight="1"/>
     </RadioGroup>
 
@@ -32,7 +36,5 @@
         android:layout_height="wrap_content"
         android:layout_weight="0.8"
         android:layout_marginBottom="@dimen/activity_horizontal_margin"/>
-
-    <include layout="@layout/admob_banner"/>
 
 </LinearLayout>

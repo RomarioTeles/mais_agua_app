@@ -21,14 +21,15 @@
     <string name="title_activity_history">Histórico</string>
     <string name="local_date_format">dd/MM/yyyy</string>
     <string name="ADMOB_APP_ID">ca-app-pub-1459790117507046~4379450410</string>
-    <string name="ID_BLOCO_ANUNCIO">ca-app-pub-1459790117507046/5856183615</string>
+    <string name="ID_BLOCO_BANNER">ca-app-pub-1459790117507046/5856183615</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="historico_por_dia">Por Dia</string>
-    <string name="historico_por_mes">Escolher mês</string>
+    <string name="historico_por_mes">Por mês</string>
     <string name="pesquisar_historico_message">Pesquisando o histórico</string>
     <string name="date_stored_format">yyyy-MM-dd</string>
     <string name="local_date_format_yyyy_mm">MM/yyyy</string>
     <string name="date_stored_format_yyyy_mm">yyyy-MM</string>
+    <string name="action_exit">Sair</string>
 </resources>

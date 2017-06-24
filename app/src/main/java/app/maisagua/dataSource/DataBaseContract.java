@@ -6,7 +6,7 @@ import android.provider.BaseColumns;
  * Created by Samsung on 03/05/2017.
  */
 public class DataBaseContract {
-    public static final int DATABASE_VERSION = 11;
+    public static final int DATABASE_VERSION = 12;
     public static final String DATABASE_NAME = "maisagua.db";
 
     public static class NoteEntry implements BaseColumns{
@@ -39,7 +39,7 @@ public class DataBaseContract {
                 "CREATE TABLE IF NOT EXISTS " + SettingsEntry.TABLE_NAME + " (" +
                         SettingsEntry._ID + DataBaseType.INTEGER_TYPE +" PRIMARY KEY AUTOINCREMENT " + DataBaseType.COMMA_SEP +
                         SettingsEntry.COLUMN_NAME_WEIGHT + DataBaseType.REAL_TYPE + DataBaseType.COMMA_SEP +
-                        SettingsEntry.COLUMN_NAME_NOTIFICATION_INTERVAL + DataBaseType.INTEGER_TYPE + DataBaseType.COMMA_SEP +
+                        SettingsEntry.COLUMN_NAME_NOTIFICATION_INTERVAL + DataBaseType.REAL_TYPE + DataBaseType.COMMA_SEP +
                         SettingsEntry.COLUMN_NAME_GOAL + DataBaseType.REAL_TYPE +" )";
 
         public static final String SQL_DELETE_ENTRY =

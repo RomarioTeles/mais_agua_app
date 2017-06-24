@@ -72,6 +72,11 @@
             android:gravity="center|top"
             android:textSize="50sp" />
 
+        <android.support.v7.widget.AppCompatSeekBar
+            android:id="@+id/seekBar_goal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
     </LinearLayout>
 
 </LinearLayout>

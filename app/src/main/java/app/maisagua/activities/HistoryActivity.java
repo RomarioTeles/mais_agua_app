@@ -11,6 +11,12 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.RadioButton;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.reward.RewardItem;
+import com.google.android.gms.ads.reward.RewardedVideoAd;
+import com.google.android.gms.ads.reward.RewardedVideoAdListener;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,7 +25,9 @@ import app.maisagua.R;
 import app.maisagua.dataSource.DataBaseContract;
 import app.maisagua.helpers.DataSourceHelper;
 
-public class HistoryActivity extends BaseActivity {
+public class HistoryActivity extends BaseActivity implements RewardedVideoAdListener {
+
+    RewardedVideoAd mRewardedVideoAd;
 
     ListView listView;
 
@@ -50,8 +58,25 @@ public class HistoryActivity extends BaseActivity {
                 task.execute(QueryTask.MONTH);
             }
         });
+    }
 
-        day.performClick();
+    @Override
+    public void onResume() {
+        loadRewardedVideoAd();
+        mRewardedVideoAd.resume(this);
+        super.onResume();
+    }
+
+    @Override
+    public void onPause() {
+        mRewardedVideoAd.pause(this);
+        super.onPause();
+    }
+
+    @Override
+    public void onDestroy() {
+        mRewardedVideoAd.destroy(this);
+        super.onDestroy();
     }
 
     @Override
@@ -62,6 +87,51 @@ public class HistoryActivity extends BaseActivity {
     @Override
     public boolean useFabButton() {
         return false;
+    }
+
+    public void loadRewardedVideoAd(){
+
+        mRewardedVideoAd = MobileAds.getRewardedVideoAdInstance(this);
+        mRewardedVideoAd.setRewardedVideoAdListener(this);
+        mRewardedVideoAd.loadAd(getString(R.string.ID_BLOCO_PREMIO), new AdRequest.Builder().addTestDevice("130026C752722E415C5E6E178CA42438").build());
+        if (mRewardedVideoAd.isLoaded()) {
+            mRewardedVideoAd.show();
+        }
+    }
+
+    @Override
+    public void onRewardedVideoAdLoaded() {
+
+    }
+
+    @Override
+    public void onRewardedVideoAdOpened() {
+
+    }
+
+    @Override
+    public void onRewardedVideoStarted() {
+
+    }
+
+    @Override
+    public void onRewardedVideoAdClosed() {
+
+    }
+
+    @Override
+    public void onRewarded(RewardItem rewardItem) {
+        day.performClick();
+    }
+
+    @Override
+    public void onRewardedVideoAdLeftApplication() {
+
+    }
+
+    @Override
+    public void onRewardedVideoAdFailedToLoad(int i) {
+        day.performClick();
     }
 
     class QueryTask extends AsyncTask<String, String, List> {

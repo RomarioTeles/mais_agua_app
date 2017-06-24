@@ -1,38 +1,40 @@
 package app.maisagua.activities;
 
-import android.app.AlarmManager;
-import android.app.Notification;
-import android.app.PendingIntent;
 import android.app.ProgressDialog;
-import android.app.TaskStackBuilder;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.SystemClock;
+import android.support.v7.widget.AppCompatSeekBar;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
+import app.maisagua.Interval;
+import app.maisagua.IntervalAdapter;
 import app.maisagua.R;
 import app.maisagua.dataSource.DataBaseContract;
 import app.maisagua.helpers.DataSourceHelper;
-import app.maisagua.receivers.NotificationReceiver;
 import app.maisagua.receivers.NotificationService;
 
 /**
  * Created by Samsung on 03/05/2017.
  */
 
-public class SettingsActivity extends BaseActivity {
+public class SettingsActivity extends BaseActivity implements SeekBar.OnSeekBarChangeListener{
 
     private static final long ONE_HOUR_IN_MILLISECONDS = 3600000;
 
@@ -48,7 +50,13 @@ public class SettingsActivity extends BaseActivity {
 
     Spinner spinnerInterval;
 
-    private static final Integer[] INTERVALS = new Integer[]{ 1, 2, 3};
+    private List<Interval> intervals;
+
+    IntervalAdapter arrayAdapter;
+
+    AppCompatSeekBar seekBar;
+
+    boolean seekBarHasMoved = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,8 +66,19 @@ public class SettingsActivity extends BaseActivity {
         editTextWeight = (EditText) findViewById(R.id.editText_weight);
         spinnerInterval = (Spinner) findViewById(R.id.spinner_interval);
         textViewGoal = (TextView) findViewById(R.id.textView_goal);
+        textViewGoal.setText(2000+"ml");
+        seekBar = (AppCompatSeekBar) findViewById(R.id.seekBar_goal);
+        seekBar.setOnSeekBarChangeListener(this);
+        seekBar.setMax(2000);
+        seekBar.setSelected(true);
+        seekBar.setEnabled(false);
 
-        ArrayAdapter<Integer> arrayAdapter = new ArrayAdapter<Integer>(this, R.layout.support_simple_spinner_dropdown_item, INTERVALS);
+        intervals = new ArrayList<>();
+        intervals.add(new Interval(0.5, "30 MIN"));
+        intervals.add(new Interval(1D, "1 H"));
+        intervals.add(new Interval(2D, "2 H"));
+
+        arrayAdapter = new IntervalAdapter(this, R.layout.item_spinner, intervals);
         spinnerInterval.setAdapter(arrayAdapter);
         sharedPreferences = getSharedPreferences(
                 getString(R.string.preference_file_key), MODE_PRIVATE);
@@ -73,14 +92,54 @@ public class SettingsActivity extends BaseActivity {
         QueryTask queryTask = new QueryTask();
         queryTask.execute();
 
+        editTextWeight.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                Double weight = Double.valueOf(s.toString());
+                Double goal = (weight * ML_BY_KG);
+                BigDecimal bdgoal = BigDecimal.valueOf(goal);
+                bdgoal.setScale(0, RoundingMode.HALF_UP);
+                textViewGoal.setText(bdgoal.intValue() + " ml");
+                seekBar.setMax(bdgoal.intValue()+1000);
+                seekBar.setProgress(bdgoal.intValue());
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                seekBarHasMoved = false;
+            }
+        });
+
+        spinnerInterval.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                seekBarHasMoved = false;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
 
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String weight = editTextWeight.getText().toString();
-                Integer interval = (Integer) spinnerInterval.getSelectedItem();
+                Double weight = Double.valueOf(editTextWeight.getText().toString());
+                Double interval = ((Interval) arrayAdapter.getItem(spinnerInterval.getSelectedItemPosition())).getTime();
+                Double goal = 2000D;
                 SaveTask saveTask = new SaveTask();
-                saveTask.execute(weight, String.valueOf(interval));
+                if(seekBarHasMoved){
+                    goal = Double.valueOf(seekBar.getProgress());
+                    saveTask.execute(weight, interval, goal, 0D);
+                }else{
+                    goal = weight * ML_BY_KG;
+                    saveTask.execute(weight, interval, goal, 1D);
+                }
+
             }
         });
     }
@@ -95,7 +154,23 @@ public class SettingsActivity extends BaseActivity {
         return true;
     }
 
-    class SaveTask extends AsyncTask<String, Void, List<String>>{
+    @Override
+    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+        textViewGoal.setText(progress + "ml");
+        seekBarHasMoved = true;
+    }
+
+    @Override
+    public void onStartTrackingTouch(SeekBar seekBar) {
+
+    }
+
+    @Override
+    public void onStopTrackingTouch(SeekBar seekBar) {
+
+    }
+
+    class SaveTask extends AsyncTask<Double, Void, List<Double>>{
 
         ProgressDialog progressDialog;
 
@@ -109,16 +184,21 @@ public class SettingsActivity extends BaseActivity {
         }
 
         @Override
-        protected List<String> doInBackground(String... params) {
+        protected List<Double> doInBackground(Double... params) {
 
-            String weight = params[0];
-            String interval = params[1];
-            Double goal = Double.valueOf(weight) * ML_BY_KG;
+            Double weight = params[0];
+            Double interval = params[1];
+            Double goal = params[2];
+            Double hasMoved = params[3];
 
             ContentValues contentValues = new ContentValues();
-            contentValues.put(DataBaseContract.SettingsEntry.COLUMN_NAME_WEIGHT, weight);
+
+            if(hasMoved > 0D) {
+                contentValues.put(DataBaseContract.SettingsEntry.COLUMN_NAME_WEIGHT, weight);
+                contentValues.put(DataBaseContract.SettingsEntry.COLUMN_NAME_NOTIFICATION_INTERVAL, interval);
+            }
+
             contentValues.put(DataBaseContract.SettingsEntry.COLUMN_NAME_GOAL, goal);
-            contentValues.put(DataBaseContract.SettingsEntry.COLUMN_NAME_NOTIFICATION_INTERVAL, interval);
 
             DataSourceHelper mDataSourceHelper = new DataSourceHelper(SettingsActivity.this);
 
@@ -128,19 +208,25 @@ public class SettingsActivity extends BaseActivity {
                 mDataSourceHelper.update(DataBaseContract.SettingsEntry.TABLE_NAME, contentValues,"_ID = ?", new String[]{String.valueOf(id)});
             }
 
-            List<String> paramsAsList = new ArrayList<String>();
+            List<Double> paramsAsList = new ArrayList<Double>();
             paramsAsList.add(weight);
             paramsAsList.add(interval);
-            paramsAsList.add(String.valueOf(goal));
+            paramsAsList.add(goal);
 
             return paramsAsList;
         }
 
         @Override
-        protected void onPostExecute(List<String> params) {
+        protected void onPostExecute(List<Double> params) {
             super.onPostExecute(params);
             progressDialog.dismiss();
-            textViewGoal.setText(params.get(2) + " ml");
+            BigDecimal goal = BigDecimal.valueOf(params.get(2));
+            goal.setScale(0, RoundingMode.HALF_UP);
+            textViewGoal.setText(goal.intValue() + " ml");
+            int max = Double.valueOf(params.get(0) * ML_BY_KG).intValue();
+            seekBar.setMax(max + 1000);
+            seekBar.setProgress(params.get(2).intValue());
+            seekBar.setEnabled(true);
 
            startService(new Intent(SettingsActivity.this, NotificationService.class));
 
@@ -183,10 +269,10 @@ public class SettingsActivity extends BaseActivity {
 
                 id = cursor.getInt(cursor.getColumnIndexOrThrow(DataBaseContract.SettingsEntry._ID));
 
-                String weight = cursor.getString(
+                Double weight = cursor.getDouble(
                         cursor.getColumnIndexOrThrow(DataBaseContract.SettingsEntry.COLUMN_NAME_WEIGHT)
                 );
-                String goal = cursor.getString(
+                Double goal = cursor.getDouble(
                         cursor.getColumnIndexOrThrow(DataBaseContract.SettingsEntry.COLUMN_NAME_GOAL)
                 );
 
@@ -194,19 +280,26 @@ public class SettingsActivity extends BaseActivity {
                         cursor.getColumnIndexOrThrow(DataBaseContract.SettingsEntry.COLUMN_NAME_NOTIFICATION_INTERVAL)
                 );
 
-                editTextWeight.setText(weight);
+                editTextWeight.setText(weight.toString());
 
                 int position = 0;
 
-                for(int i = 0; i < INTERVALS.length; i++){
-                    int pos = INTERVALS[i];
-                    if(pos == interval){
+                for(int i = 0; i < intervals.size(); i++){
+                    Interval pos = intervals.get(i);
+                    if(pos.getTime() == interval){
                         position = i;
                         break;
                     }
                 }
+
                 spinnerInterval.setSelection(position);
-                textViewGoal.setText(goal + " ml");
+                BigDecimal bdgoal = BigDecimal.valueOf(goal);
+                bdgoal.setScale(0, RoundingMode.HALF_UP);
+                textViewGoal.setText(bdgoal.intValue() + " ml");
+                int max = Double.valueOf(weight * ML_BY_KG).intValue();
+                seekBar.setMax(max + 1000);
+                seekBar.setProgress(goal.intValue());
+                seekBar.setEnabled(true);
             }
 
             progressDialog.dismiss();
